@@ -58,6 +58,10 @@ _main:
         drawRacket 10, word[playerPosition]
         
         sla:
+        mov ah, 0x01
+        int 16h
+        cmp al, 115
+        je moveDown
         
     jmp mainLoop
 
@@ -71,11 +75,13 @@ setVideoMode:
     int 10h
 ret
 
-; moveDown:
-;     mov ax, word[playerPosition]
-;     inc ax
-;     mov [playerPosition], ax
-; jmp mainLoop
+moveDown:
+    mov ax, word[playerPosition]
+    inc ax
+    mov [playerPosition], ax
+    mov ah, 0x04
+    int 16h
+jmp mainLoop
 
 times 510-($-$$) db 0
 dw 0xaa55
