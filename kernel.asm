@@ -18,7 +18,7 @@ _main:
     call setVideoMode
 
     ;posicao inicial da raquete
-    mov word[playerPositionY], 10
+    mov word[playerPositionY], 75
     mov word[playerPositionX], 10
 
     mainLoop:
@@ -30,8 +30,10 @@ _main:
         jz mainLoop
         mov ah, 00h
         int 16h
-        cmp al, 115
+        cmp al, 115 ; key 's'
         je moveDown
+        cmp al, 119 ; key 'w'
+        je moveUp
         
     jmp mainLoop
 
@@ -47,10 +49,51 @@ ret
 
 moveDown:
     mov ax, word[playerPositionY]
+    
+    mov dx, word[playerPositionY]
+    mov cx, word[playerPositionX]
+    mov bx, 0x00
+    clearTraceDown:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 8
+    jne clearTraceDown
+
+    mov ax, word[playerPositionY]
+
     inc ax
     mov [playerPositionY], ax
     mov ah, 0x04
     int 16h
+    call drawRacket
+jmp mainLoop
+
+moveUp:
+    mov ax, word[playerPositionY]
+    
+    mov dx, word[playerPositionY]
+    mov cx, word[playerPositionX]
+    mov bx, 0x00
+    add dx, 31
+    clearTraceUp:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 8
+    jne clearTraceUp
+
+    mov ax, word[playerPositionY]
+
+    dec ax
+    mov [playerPositionY], ax
+    mov ah, 0x04
+    int 16h
+    call drawRacket
 jmp mainLoop
 
 drawRacket:
