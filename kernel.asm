@@ -4,9 +4,6 @@ jmp _main
 _data:
     playerPositionY dw 0
     playerPositionX dw 0
-; %1 == coluna (x)
-; %2 == linha (y)
-
 
 _main:
     ; limpa alguns registradores
