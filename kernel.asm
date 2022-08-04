@@ -1,24 +1,23 @@
-; BITS 16
-org 0x7c00
- ;Setup ISR for the scancode
+org 0x7e00
+jmp main
 
-call init
-;Clear screen
-mov ax, 03h
-int 10h
+playerPositionY dw 0
+playerPositionX dw 0
 
-mov si, strCommand
-call prints
-
-_data:
-    playerPositionY dw 0
-    playerPositionX dw 0
-
-_main:
+main:
     xor ax, ax
     mov ds, ax
     mov cx, ax
     mov dx, ax
+
+    ;Setup ISR for the scancode
+    call init
+    ;Clear screen
+    mov ax, 03h
+    int 10h
+
+    mov si, strCommand
+    call prints
 
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
@@ -28,15 +27,16 @@ _main:
     mainLoop:
         call drawRacket
         ;Check if a is pressed 
-        mov al, 1fh           ;a
+        mov al, 1fh           ;s
         call is_scancode_pressed
         ; jz mainLoop
         jnz moveDown
 
         checkUp:
         ;Check if 'd' is pressed 
-        mov al, 20h           ;d 
+        mov al, 11h           ;w 
         call is_scancode_pressed
+        jnz moveUp
         jmp mainLoop
 
         ;Both are pressed, print bye and ...
@@ -51,7 +51,7 @@ _main:
         ;... restore the ISR and ...
         ;  call dispose 
 
-jmp $
+jmp done
 
  strCommand db "Press 'a' and 'd' to exit", 13, 10, 24h, 0 
  strDone    db "Bye",13,10,13,10,24h, 0
@@ -122,30 +122,33 @@ moveDown:
     call drawRacket
 jmp checkUp
 
-; moveUp:
-;     mov ax, word[playerPositionY]
+done:
+    jmp $
+
+moveUp:
+    mov ax, word[playerPositionY]
     
-;     mov dx, word[playerPositionY]
-;     mov cx, word[playerPositionX]
-;     mov bx, 0x00
-;     add dx, 31
-;     clearTraceUp:
-;         mov al, 0x00 ; black pixel
-;         mov ah, 0ch
-;         int 10h
-;         inc cx
-;         inc bx
-;         cmp bx, 8
-;     jne clearTraceUp
+    mov dx, word[playerPositionY]
+    mov cx, word[playerPositionX]
+    mov bx, 0x00
+    add dx, 31
+    clearTraceUp:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 8
+    jne clearTraceUp
 
-;     mov ax, word[playerPositionY]
+    mov ax, word[playerPositionY]
 
-;     dec ax
-;     mov [playerPositionY], ax
-;     mov ah, 0x04
-;     int 16h
-;     call drawRacket
-; jmp mainLoop
+    dec ax
+    mov [playerPositionY], ax
+    mov ah, 0x04
+    int 16h
+    call drawRacket
+jmp mainLoop
 
 
  ;----- SCANCODE FUNCTIONS -----
@@ -298,7 +301,3 @@ old_isr_15                      dw new_isr_15, 0
 scancode_status     TIMES 128   db 0
  ;Scan code count 
 new_scancode                    dw 0
-
-
-times 510-($-$$) db 0
-dw 0xaa55
