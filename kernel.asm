@@ -3,6 +3,8 @@ jmp main
 
 playerPositionY dw 0
 playerPositionX dw 0
+secPlayerPositionY dw 0
+secPlayerPositionX dw 0
 
 main:
     xor ax, ax
@@ -22,11 +24,16 @@ main:
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
 
+    mov word[secPlayerPositionY], 75
+    mov word[secPlayerPositionX], 303
+
     call setVideoMode
 
     mainLoop:
         call drawRacket
+        call drawRacketSec
         ;Check if a is pressed 
+        
         mov al, 1fh           ;s
         call is_scancode_pressed
         ; jz mainLoop
@@ -44,12 +51,7 @@ main:
         int 10h
         mov si, strDone
         call prints
-        ;  mov ah, 09h 
-        ;  mov dx, strDone
-        ;  int 21h 
-
-        ;... restore the ISR and ...
-        ;  call dispose 
+       
 
 jmp done
 
@@ -96,6 +98,39 @@ drawRacket:
         .fim2:
         inc dx
         jmp for1
+ret
+
+drawRacketSec:
+    mov ah, 0ch ; coloca no modo de pintar pixels
+    mov dx, word[secPlayerPositionY]
+
+    lop1:
+        mov bx, 32 ;altura da raquete 
+        add bx, word[secPlayerPositionY]
+        cmp dx, bx  ; fim da raquete (linhas)
+        je .end1
+        mov cx, word[secPlayerPositionX]  ; inicio da raquete (coluna)
+        jmp .lop2
+        jmp lop1
+
+        .end1:
+        ret
+
+        ; laco for para varrer as 8 colunas da imagem
+        .lop2:
+        mov bx, 8 ;largura da raquete
+        add bx, word[secPlayerPositionX]
+        cmp cx, bx   ; direita da raquete
+        je .end2
+        mov al, 0x0f
+        mov ah, 0ch
+        int 10h
+        inc cx
+        jmp .lop2
+
+        .end2:
+        inc dx
+        jmp lop1
 ret
 
 moveDown:
