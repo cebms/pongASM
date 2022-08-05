@@ -9,6 +9,13 @@ movCount dw 0
 movCountSec dw 0
 racketSpeed dw 7
 
+ballPositionX dw 50
+ballPositionY dw 50
+
+ballDirectionX dw 2; 0 esquerda, 1 parado, 2 direita
+ballDirectionY dw 2; 0 baixo, 1 parado, 2 direita
+
+
 main:
     xor ax, ax
     mov ds, ax
@@ -36,7 +43,10 @@ main:
         call drawRacket
         
         call drawRacketSec
-        ;Check if a is pressed 
+        
+        call drawBall
+
+        call movBall
         
         mov al, 1fh           ;s
         call is_scancode_pressed
@@ -57,6 +67,7 @@ main:
         mov al, 48h
         call is_scancode_pressed
         jnz delaySecPlayerUp
+
         jmp mainLoop   
        
 
@@ -67,6 +78,107 @@ jmp done
 
 
 ;----- GAME FUNCTIONS -----
+
+movBall:
+    controlY:
+        cmp word[ballPositionY], 5
+        je goDown
+        cmp word[ballPositionY], 190
+        je goUp
+
+    controlX:
+        cmp word[ballPositionX], 74
+        je checkColSec
+
+
+    movX:
+        cmp word[ballDirectionX], 1
+        ja incBallX
+        jb decBallX
+
+    movY:
+        cmp word[ballDirectionY], 1
+        jb incBallY
+        ja decBallY
+
+    endMov:
+ret
+
+checkColSec:
+    checkTop:
+        cmp word[secPlayerPositionY], ballPositionY
+    jne movX
+    checkBottom:
+        push ax
+        push bx
+        mov ax, secPlayerPositionY
+        add ax, 32
+        mov bx, ballPositionY
+        add bx, 8
+        cmp ax, bx
+        pop bx
+        pop ax
+        je goLeft
+    jmp movX
+jmp movX
+
+goLeft:
+    mov word[ballDirectionX], 0
+jmp movX
+goDown:
+    mov word[ballDirectionY], 0
+jmp controlX
+goUp:
+    mov word[ballDirectionY], 2
+jmp controlX
+
+
+incBallX:
+    inc word[ballPositionX]
+jmp movY
+decBallX:
+    dec word[ballPositionX]
+jmp movY
+incBallY:
+    inc word[ballPositionY]
+jmp endMov
+decBallY:
+    dec word[ballPositionY]
+jmp endMov
+
+drawBall:
+    mov ah, 0ch ; coloca no modo de pintar pixels
+    mov dx, word[ballPositionY]
+
+    for5:
+        mov bx, 8 ;altura da bola 
+        add bx, word[ballPositionY]
+        cmp dx, bx  ; fim da bola (linhas)
+        je .fim5
+        mov cx, word[ballPositionX]  ; inicio da bola (coluna)
+        jmp .for6
+        jmp for5
+
+        .fim5:
+        ret
+
+        ; laco for para varrer as 8 colunas da imagem
+        .for6:
+        mov bx, 8 ;largura da bola
+        add bx, word[ballPositionX]
+        cmp cx, bx   ; direita da bola
+        je .fim6
+        mov al, 0x0f
+        mov ah, 0ch
+        int 10h
+        inc cx
+        jmp .for6
+
+        .fim6:
+        inc dx
+        jmp for5
+
+ret
 
 delayFirstPlayerDown:
 inc word[movCount]
@@ -95,8 +207,6 @@ mov ax, word[racketSpeed]
 cmp word[movCountSec], ax
 je moveUpSec
 jmp mainLoop
-
-
 
 setVideoMode: 
     mov ah, 0       ; primeiro parametro para chamar modo de video
