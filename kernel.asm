@@ -9,11 +9,11 @@ movCount dw 0
 movCountSec dw 0
 racketSpeed dw 7
 
-ballPositionX dw 50
-ballPositionY dw 50
+ballPositionX dw 100
+ballPositionY dw 60
 
-ballDirectionX dw 2; 0 esquerda, 1 parado, 2 direita
-ballDirectionY dw 2; 0 baixo, 1 parado, 2 direita
+ballDirectionX dw 0; 0 esquerda, 1 parado, 2 direita1
+ballDirectionY dw 1; 0 baixo, 1 parado, 2 direita
 
 
 main:
@@ -28,9 +28,6 @@ main:
     mov ax, 03h
     int 10h
 
-    mov si, strCommand
-    call prints
-
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
 
@@ -40,6 +37,7 @@ main:
     call setVideoMode
 
     mainLoop:
+
         call drawRacket
         
         call drawRacketSec
@@ -73,10 +71,6 @@ main:
 
 jmp done
 
- strCommand db "Press 'a' and 'd' to exit", 13, 10, 24h, 0 
- strDone    db "Bye",13,10,13,10,24h, 0
-
-
 ;----- GAME FUNCTIONS -----
 
 movBall:
@@ -87,9 +81,12 @@ movBall:
         je goUp
 
     controlX:
-        cmp word[ballPositionX], 74
+        ;se estiver perto de bater na raquete da esquerda
+        cmp word[ballPositionX], 25
+        je checkCol
+        ;se estiver perto de bater na raquete da direita
+        cmp word[ballPositionX], 290
         je checkColSec
-
 
     movX:
         cmp word[ballDirectionX], 1
@@ -104,24 +101,47 @@ movBall:
     endMov:
 ret
 
-checkColSec:
-    checkTop:
-        cmp word[secPlayerPositionY], ballPositionY
-    jne movX
-    checkBottom:
-        push ax
-        push bx
-        mov ax, secPlayerPositionY
-        add ax, 32
-        mov bx, ballPositionY
-        add bx, 8
+checkCol:
+    ;preciso checar se ele esta na mesma altura
+    pusha
+    checkBaixo:
+        mov ax, word[ballPositionY]
+        mov bx, word[playerPositionY]
+        add bx, 32
         cmp ax, bx
-        pop bx
-        pop ax
-        je goLeft
-    jmp movX
-jmp movX
+        ja movX  ; se bx+32 < ax nao colidiu
+    checaCima:
+        mov ax, word[ballPositionY]
+        add ax, 8
+        mov bx, word[playerPositionY]
+        cmp bx, bx
+        jb movX
+    popa
 
+jmp goRight
+
+checkColSec:
+    ;preciso checar se ele esta na mesma altura
+    pusha
+    ; checkBaixo1
+        mov ax, word[ballPositionY]
+        mov bx, word[secPlayerPositionY]
+        add bx, 32
+        cmp ax, bx
+        ja movX  ; se bx+32 < ax nao colidiu
+    ; checaCima:
+        mov ax, word[ballPositionY]
+        add ax, 8
+        mov bx, word[secPlayerPositionY]
+        cmp bx, bx
+        jb movX
+    popa
+
+jmp goLeft
+
+goRight:
+    mov word[ballDirectionX], 2
+jmp movX
 goLeft:
     mov word[ballDirectionX], 0
 jmp movX
@@ -356,7 +376,6 @@ moveUpSec:
     mov [secPlayerPositionY], ax
     mov ah, 0x04
     int 16h
-    call drawRacket
 jmp mainLoop
 
 moveDownSec:
@@ -381,7 +400,6 @@ moveDownSec:
     mov [secPlayerPositionY], ax
     mov ah, 0x04
     int 16h
-    call drawRacketSec
 jmp checkUpSec
 
 
