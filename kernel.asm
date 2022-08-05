@@ -45,12 +45,12 @@ main:
         jnz moveUp
 
         checkDownSec:
-        mov al, 25h         
+        mov al, 50h         
         call is_scancode_pressed
         jnz moveDownSec
 
         checkUpSec:
-        mov al, 17h
+        mov al, 48h
         call is_scancode_pressed
         jnz moveUpSec
         jmp mainLoop   
@@ -137,8 +137,8 @@ drawRacketSec:
 ret
 
 moveDown:
-    mov ax, word[playerPositionY]
-    
+    cmp word[playerPositionY], 168
+    je checkUp
     mov dx, word[playerPositionY]
     mov cx, word[playerPositionX]
     mov bx, 0x00
@@ -152,8 +152,7 @@ moveDown:
     jne clearTraceDown
 
     mov ax, word[playerPositionY]
-
-    inc ax
+    inc ax 
     mov [playerPositionY], ax
     mov ah, 0x04
     int 16h
@@ -164,8 +163,8 @@ done:
     jmp $
 
 moveUp:
-    mov ax, word[playerPositionY]
-    
+    cmp word[playerPositionY], 0
+    je checkDownSec
     mov dx, word[playerPositionY]
     mov cx, word[playerPositionX]
     mov bx, 0x00
@@ -189,8 +188,8 @@ moveUp:
 jmp checkDownSec
 
 moveUpSec:
-    mov ax, word[secPlayerPositionY]
-    
+    cmp word[secPlayerPositionY], 0
+    je mainLoop
     mov dx, word[secPlayerPositionY]
     mov cx, word[secPlayerPositionX]
     mov bx, 0x00
@@ -214,8 +213,8 @@ moveUpSec:
 jmp mainLoop
 
 moveDownSec:
-    mov ax, word[secPlayerPositionY]
-    
+    cmp word[secPlayerPositionY], 168
+    je checkUpSec
     mov dx, word[secPlayerPositionY]
     mov cx, word[secPlayerPositionX]
     mov bx, 0x00
