@@ -1,0 +1,19 @@
+**to do:
+
+- Draw Ball 
+- Ball Physx 
+- ScoreBoard
+- Menu
+- Background
+- Sound
+- Racket colors
+
+
+**doing: 
+- 
+
+**done:
+- Racket Speed
+- Rackets Drawing
+- Racket Movements
+- Field boundaries
