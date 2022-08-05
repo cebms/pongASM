@@ -7,7 +7,7 @@ secPlayerPositionY dw 0
 secPlayerPositionX dw 0
 movCount dw 0
 movCountSec dw 0
-racketSpeed dw 1
+racketSpeed dw 7
 
 main:
     xor ax, ax
