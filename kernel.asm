@@ -36,21 +36,24 @@ main:
         
         mov al, 1fh           ;s
         call is_scancode_pressed
-        ; jz mainLoop
+        ; jz mainLoops
         jnz moveDown
 
         checkUp:
-        ;Check if 'd' is pressed 
         mov al, 11h           ;w 
         call is_scancode_pressed
         jnz moveUp
-        jmp mainLoop
 
-        ;Both are pressed, print bye and ...
-        mov ax, 03h
-        int 10h
-        mov si, strDone
-        call prints
+        checkDownSec:
+        mov al, 25h         
+        call is_scancode_pressed
+        jnz moveDownSec
+
+        checkUpSec:
+        mov al, 17h
+        call is_scancode_pressed
+        jnz moveUpSec
+        jmp mainLoop   
        
 
 jmp done
@@ -183,7 +186,56 @@ moveUp:
     mov ah, 0x04
     int 16h
     call drawRacket
+jmp checkDownSec
+
+moveUpSec:
+    mov ax, word[secPlayerPositionY]
+    
+    mov dx, word[secPlayerPositionY]
+    mov cx, word[secPlayerPositionX]
+    mov bx, 0x00
+    add dx, 31
+    clearTraceUpSec:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 8
+    jne clearTraceUpSec
+
+    mov ax, word[secPlayerPositionY]
+
+    dec ax
+    mov [secPlayerPositionY], ax
+    mov ah, 0x04
+    int 16h
+    call drawRacket
 jmp mainLoop
+
+moveDownSec:
+    mov ax, word[secPlayerPositionY]
+    
+    mov dx, word[secPlayerPositionY]
+    mov cx, word[secPlayerPositionX]
+    mov bx, 0x00
+    clearTraceDownSec:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 8
+    jne clearTraceDownSec
+
+    mov ax, word[secPlayerPositionY]
+
+    inc ax
+    mov [secPlayerPositionY], ax
+    mov ah, 0x04
+    int 16h
+    call drawRacketSec
+jmp checkUpSec
 
 
  ;----- SCANCODE FUNCTIONS -----
