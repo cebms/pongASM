@@ -5,6 +5,9 @@ playerPositionY dw 0
 playerPositionX dw 0
 secPlayerPositionY dw 0
 secPlayerPositionX dw 0
+movCount dw 0
+movCountSec dw 0
+racketSpeed dw 1
 
 main:
     xor ax, ax
@@ -31,28 +34,29 @@ main:
 
     mainLoop:
         call drawRacket
+        
         call drawRacketSec
         ;Check if a is pressed 
         
         mov al, 1fh           ;s
         call is_scancode_pressed
         ; jz mainLoops
-        jnz moveDown
+        jnz delayFirstPlayerDown
 
         checkUp:
         mov al, 11h           ;w 
         call is_scancode_pressed
-        jnz moveUp
+        jnz delayFirstPlayerUp
 
         checkDownSec:
         mov al, 50h         
         call is_scancode_pressed
-        jnz moveDownSec
+        jnz delaySecPlayerDown
 
         checkUpSec:
         mov al, 48h
         call is_scancode_pressed
-        jnz moveUpSec
+        jnz delaySecPlayerUp
         jmp mainLoop   
        
 
@@ -63,6 +67,36 @@ jmp done
 
 
 ;----- GAME FUNCTIONS -----
+
+delayFirstPlayerDown:
+inc word[movCount]
+mov ax, word[racketSpeed]
+cmp word[movCount], ax
+je moveDown
+jmp checkUp
+
+delaySecPlayerDown:
+inc word[movCountSec]
+mov ax, word[racketSpeed]
+cmp word[movCountSec], ax
+je moveDownSec
+jmp checkUpSec
+
+delayFirstPlayerUp:
+inc word[movCount]
+mov ax, word[racketSpeed]
+cmp word[movCount], ax
+je moveUp
+jmp checkDownSec
+
+delaySecPlayerUp:
+inc word[movCountSec]
+mov ax, word[racketSpeed]
+cmp word[movCountSec], ax
+je moveUpSec
+jmp mainLoop
+
+
 
 setVideoMode: 
     mov ah, 0       ; primeiro parametro para chamar modo de video
@@ -137,6 +171,7 @@ drawRacketSec:
 ret
 
 moveDown:
+    mov word[movCount], 0
     cmp word[playerPositionY], 168
     je checkUp
     mov dx, word[playerPositionY]
@@ -163,6 +198,7 @@ done:
     jmp $
 
 moveUp:
+    mov word[movCount], 0
     cmp word[playerPositionY], 0
     je checkDownSec
     mov dx, word[playerPositionY]
@@ -188,6 +224,7 @@ moveUp:
 jmp checkDownSec
 
 moveUpSec:
+    mov word[movCountSec], 0
     cmp word[secPlayerPositionY], 0
     je mainLoop
     mov dx, word[secPlayerPositionY]
@@ -213,6 +250,7 @@ moveUpSec:
 jmp mainLoop
 
 moveDownSec:
+    mov word[movCountSec], 0
     cmp word[secPlayerPositionY], 168
     je checkUpSec
     mov dx, word[secPlayerPositionY]
