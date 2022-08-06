@@ -12,8 +12,8 @@ racketSpeed dw 7
 ballPositionX dw 100
 ballPositionY dw 60
 
-ballDirectionX dw 0; 0 esquerda, 1 parado, 2 direita1
-ballDirectionY dw 1; 0 baixo, 1 parado, 2 direita
+ballDirectionX dw 0; 0 esquerda, 1 parado, 2 direita
+ballDirectionY dw 2; 0 baixo, 1 parado, 2 cima
 
 
 main:
@@ -57,12 +57,12 @@ main:
         jnz delayFirstPlayerUp
 
         checkDownSec:
-        mov al, 50h         
+        mov al, 50h         ; arrow down
         call is_scancode_pressed
         jnz delaySecPlayerDown
 
         checkUpSec:
-        mov al, 48h
+        mov al, 48h         ; arrow up
         call is_scancode_pressed
         jnz delaySecPlayerUp
 
@@ -154,15 +154,63 @@ jmp controlX
 
 
 incBallX:
+    mov dx, word[ballPositionY]
+    mov cx, word[ballPositionX]
+    mov bx, 0x00
+    clearBallTraceRight:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc dx
+        inc bx
+        cmp bx, 9
+    jne clearBallTraceRight
     inc word[ballPositionX]
 jmp movY
+
 decBallX:
+    mov dx, word[ballPositionY]
+    mov cx, word[ballPositionX]
+    mov bx, 0x00
+    add cx, 8
+    clearBallTraceLeft:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc dx
+        inc bx
+        cmp bx, 9
+    jne clearBallTraceLeft
     dec word[ballPositionX]
 jmp movY
+
 incBallY:
+    mov dx, word[ballPositionY]
+    mov cx, word[ballPositionX]
+    mov bx, 0x00
+    clearBallTraceDown:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 9
+    jne clearBallTraceDown
     inc word[ballPositionY]
 jmp endMov
 decBallY:
+    mov dx, word[ballPositionY]
+    mov cx, word[ballPositionX]
+    mov bx, 0x00
+    add dx, 8
+    clearBallTraceUp:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 9
+    jne clearBallTraceUp
     dec word[ballPositionY]
 jmp endMov
 
@@ -321,7 +369,6 @@ moveDown:
     mov [playerPositionY], ax
     mov ah, 0x04
     int 16h
-    call drawRacket
 jmp checkUp
 
 done:
@@ -350,7 +397,6 @@ moveUp:
     mov [playerPositionY], ax
     mov ah, 0x04
     int 16h
-    call drawRacket
 jmp checkDownSec
 
 moveUpSec:
