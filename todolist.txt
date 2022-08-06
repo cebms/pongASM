@@ -5,7 +5,6 @@
 - Background color
 - Sound
 - Racket colors
-- Ball friction with racket
 
 **doing: 
 
@@ -18,3 +17,4 @@
 - Rackets Drawing
 - Racket Movements
 - Field boundaries
+- Ball friction with racket

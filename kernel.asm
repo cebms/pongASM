@@ -154,6 +154,18 @@ checkCol:
         cmp ax, bx
         jb movX
 
+    racketMovingUp:
+    mov al, 11h           ;w 
+    call is_scancode_pressed
+    jnz frictionUp
+
+    racketMovingDown:
+    mov al, 1fh           ;s 
+    call is_scancode_pressed
+    jnz frictionDown
+
+    endRacketCheck:
+
 jmp goRight
 
 checkColSec:
@@ -171,7 +183,35 @@ checkColSec:
         cmp ax, bx
         jb movX
 
+    racketMovingUpSec:
+    mov al, 48h           ;w 
+    call is_scancode_pressed
+    jnz frictionUpSec
+
+    racketMovingDownSec:
+    mov al, 50h           ;s 
+    call is_scancode_pressed
+    jnz frictionDownSec
+
+    endRacketCheckSec:
+
 jmp goLeft
+
+frictionUp:
+    mov word[ballDirectionY], 2 ;go up
+jmp racketMovingDown
+
+frictionDown:
+    mov word[ballDirectionY], 0 ;do down
+jmp endRacketCheck
+
+frictionUpSec:
+    mov word[ballDirectionY], 2 ;go up
+jmp racketMovingDownSec
+
+frictionDownSec:
+    mov word[ballDirectionY], 0 ;do down
+jmp endRacketCheckSec
 
 goRight:
     mov word[ballDirectionX], 2
