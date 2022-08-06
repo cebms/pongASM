@@ -1,15 +1,17 @@
 **to do:
 
 - ScoreBoard
-- Menu
-- Background
+- Menu (play, creditos, instrucoes)
+- Background color
 - Sound
 - Racket colors
+- Ball friction with racket
 
 **doing: 
-- Fixing colisions 
+
 
 **done:
+- Fixing colisions 
 - Draw Ball 
 - Ball Physx 
 - Racket Speed

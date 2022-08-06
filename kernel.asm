@@ -130,14 +130,13 @@ jmp mainLoop
 
 p2Point:
     mov word[ballPositionX], 96
-    mov word[secPlayerPositionY], 75
-    mov word[secPlayerPositionX], 10
+    mov word[playerPositionY], 75
+    mov word[playerPositionX], 10
     mov word[secPlayerPositionY], 75
     mov word[secPlayerPositionX], 303
     mov word[ballDirectionX],  2; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
     call clearScreen
-
 jmp mainLoop
 
 checkCol:
