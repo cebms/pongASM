@@ -15,6 +15,9 @@ ballPositionY dw 60
 ballDirectionX dw 0; 0 esquerda, 1 parado, 2 direita
 ballDirectionY dw 2; 0 baixo, 1 parado, 2 cima
 
+ballSpeed dw 15
+ballCount dw 0
+
 
 main:
     xor ax, ax
@@ -43,7 +46,7 @@ main:
         call drawRacketSec
         
         call drawBall
-
+        
         call movBall
         
         mov al, 1fh           ;s
@@ -74,7 +77,15 @@ jmp done
 ;----- GAME FUNCTIONS -----
 
 movBall:
+
+    mov ax, word[ballCount]
+    cmp ax, word[ballSpeed] 
+    je controlY
+    inc word[ballCount]
+    ret
+
     controlY:
+        mov word[ballCount], 0
         cmp word[ballPositionY], 5
         je goDown
         cmp word[ballPositionY], 190
