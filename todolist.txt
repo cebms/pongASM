@@ -1,18 +1,17 @@
 **to do:
 
-- Draw Ball 
-- Ball Physx 
 - ScoreBoard
 - Menu
 - Background
 - Sound
 - Racket colors
 
-
 **doing: 
-- 
+- Fixing colisions 
 
 **done:
+- Draw Ball 
+- Ball Physx 
 - Racket Speed
 - Rackets Drawing
 - Racket Movements
