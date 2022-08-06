@@ -9,6 +9,16 @@ movCount dw 0
 movCountSec dw 0
 racketSpeed dw 7
 
+ballPositionX dw 100
+ballPositionY dw 60
+
+ballDirectionX dw 0; 0 esquerda, 1 parado, 2 direita
+ballDirectionY dw 2; 0 baixo, 1 parado, 2 cima
+
+ballSpeed dw 15
+ballCount dw 0
+
+
 main:
     xor ax, ax
     mov ds, ax
@@ -21,9 +31,6 @@ main:
     mov ax, 03h
     int 10h
 
-    mov si, strCommand
-    call prints
-
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
 
@@ -33,10 +40,14 @@ main:
     call setVideoMode
 
     mainLoop:
+
         call drawRacket
         
         call drawRacketSec
-        ;Check if a is pressed 
+        
+        call drawBall
+        
+        call movBall
         
         mov al, 1fh           ;s
         call is_scancode_pressed
@@ -49,24 +60,204 @@ main:
         jnz delayFirstPlayerUp
 
         checkDownSec:
-        mov al, 50h         
+        mov al, 50h         ; arrow down
         call is_scancode_pressed
         jnz delaySecPlayerDown
 
         checkUpSec:
-        mov al, 48h
+        mov al, 48h         ; arrow up
         call is_scancode_pressed
         jnz delaySecPlayerUp
+
         jmp mainLoop   
        
 
 jmp done
 
- strCommand db "Press 'a' and 'd' to exit", 13, 10, 24h, 0 
- strDone    db "Bye",13,10,13,10,24h, 0
-
-
 ;----- GAME FUNCTIONS -----
+
+movBall:
+
+    mov ax, word[ballCount]
+    cmp ax, word[ballSpeed] 
+    je controlY
+    inc word[ballCount]
+    ret
+
+    controlY:
+        mov word[ballCount], 0
+        cmp word[ballPositionY], 5
+        je goDown
+        cmp word[ballPositionY], 190
+        je goUp
+
+    controlX:
+        ;se estiver perto de bater na raquete da esquerda
+        cmp word[ballPositionX], 25
+        je checkCol
+        ;se estiver perto de bater na raquete da direita
+        cmp word[ballPositionX], 290
+        je checkColSec
+
+    movX:
+        cmp word[ballDirectionX], 1
+        ja incBallX
+        jb decBallX
+
+    movY:
+        cmp word[ballDirectionY], 1
+        jb incBallY
+        ja decBallY
+
+    endMov:
+ret
+
+checkCol:
+    ;preciso checar se ele esta na mesma altura
+    pusha
+    checkBaixo:
+        mov ax, word[ballPositionY]
+        mov bx, word[playerPositionY]
+        add bx, 32
+        cmp ax, bx
+        ja movX  ; se bx+32 < ax nao colidiu
+    checaCima:
+        mov ax, word[ballPositionY]
+        add ax, 8
+        mov bx, word[playerPositionY]
+        cmp bx, bx
+        jb movX
+    popa
+
+jmp goRight
+
+checkColSec:
+    ;preciso checar se ele esta na mesma altura
+    pusha
+    ; checkBaixo1
+        mov ax, word[ballPositionY]
+        mov bx, word[secPlayerPositionY]
+        add bx, 32
+        cmp ax, bx
+        ja movX  ; se bx+32 < ax nao colidiu
+    ; checaCima:
+        mov ax, word[ballPositionY]
+        add ax, 8
+        mov bx, word[secPlayerPositionY]
+        cmp bx, bx
+        jb movX
+    popa
+
+jmp goLeft
+
+goRight:
+    mov word[ballDirectionX], 2
+jmp movX
+goLeft:
+    mov word[ballDirectionX], 0
+jmp movX
+goDown:
+    mov word[ballDirectionY], 0
+jmp controlX
+goUp:
+    mov word[ballDirectionY], 2
+jmp controlX
+
+
+incBallX:
+    mov dx, word[ballPositionY]
+    mov cx, word[ballPositionX]
+    mov bx, 0x00
+    clearBallTraceRight:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc dx
+        inc bx
+        cmp bx, 9
+    jne clearBallTraceRight
+    inc word[ballPositionX]
+jmp movY
+
+decBallX:
+    mov dx, word[ballPositionY]
+    mov cx, word[ballPositionX]
+    mov bx, 0x00
+    add cx, 8
+    clearBallTraceLeft:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc dx
+        inc bx
+        cmp bx, 9
+    jne clearBallTraceLeft
+    dec word[ballPositionX]
+jmp movY
+
+incBallY:
+    mov dx, word[ballPositionY]
+    mov cx, word[ballPositionX]
+    mov bx, 0x00
+    clearBallTraceDown:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 9
+    jne clearBallTraceDown
+    inc word[ballPositionY]
+jmp endMov
+decBallY:
+    mov dx, word[ballPositionY]
+    mov cx, word[ballPositionX]
+    mov bx, 0x00
+    add dx, 8
+    clearBallTraceUp:
+        mov al, 0x00 ; black pixel
+        mov ah, 0ch
+        int 10h
+        inc cx
+        inc bx
+        cmp bx, 9
+    jne clearBallTraceUp
+    dec word[ballPositionY]
+jmp endMov
+
+drawBall:
+    mov ah, 0ch ; coloca no modo de pintar pixels
+    mov dx, word[ballPositionY]
+
+    for5:
+        mov bx, 8 ;altura da bola 
+        add bx, word[ballPositionY]
+        cmp dx, bx  ; fim da bola (linhas)
+        je .fim5
+        mov cx, word[ballPositionX]  ; inicio da bola (coluna)
+        jmp .for6
+        jmp for5
+
+        .fim5:
+        ret
+
+        ; laco for para varrer as 8 colunas da imagem
+        .for6:
+        mov bx, 8 ;largura da bola
+        add bx, word[ballPositionX]
+        cmp cx, bx   ; direita da bola
+        je .fim6
+        mov al, 0x0f
+        mov ah, 0ch
+        int 10h
+        inc cx
+        jmp .for6
+
+        .fim6:
+        inc dx
+        jmp for5
+
+ret
 
 delayFirstPlayerDown:
 inc word[movCount]
@@ -95,8 +286,6 @@ mov ax, word[racketSpeed]
 cmp word[movCountSec], ax
 je moveUpSec
 jmp mainLoop
-
-
 
 setVideoMode: 
     mov ah, 0       ; primeiro parametro para chamar modo de video
@@ -191,7 +380,6 @@ moveDown:
     mov [playerPositionY], ax
     mov ah, 0x04
     int 16h
-    call drawRacket
 jmp checkUp
 
 done:
@@ -220,7 +408,6 @@ moveUp:
     mov [playerPositionY], ax
     mov ah, 0x04
     int 16h
-    call drawRacket
 jmp checkDownSec
 
 moveUpSec:
@@ -246,7 +433,6 @@ moveUpSec:
     mov [secPlayerPositionY], ax
     mov ah, 0x04
     int 16h
-    call drawRacket
 jmp mainLoop
 
 moveDownSec:
@@ -271,7 +457,6 @@ moveDownSec:
     mov [secPlayerPositionY], ax
     mov ah, 0x04
     int 16h
-    call drawRacketSec
 jmp checkUpSec
 
 
