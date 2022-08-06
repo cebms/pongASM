@@ -9,6 +9,9 @@ movCount dw 0
 movCountSec dw 0
 racketSpeed dw 7
 
+FirstPlayerScore db 48, 0
+SecondPlayerScore db 48, 0
+
 ballPositionX dw 100
 ballPositionY dw 60
 
@@ -29,8 +32,9 @@ main:
     call init
     ;Clear screen
     call clearScreen
-
     call setVideoMode
+    call printFirstPlayerScore
+    call printSecondPlayerScore
 
     mainLoop:
 
@@ -69,10 +73,61 @@ jmp done
 
 ;----- GAME FUNCTIONS -----
 
+printSecondPlayerScore:
+    mov ah,02h
+    mov dh,2    ;row
+    mov dl,22    ;column
+    int 10h
+
+    mov si, SecondPlayerScore
+    call printf
+    ret
+
+printFirstPlayerScore:
+    mov ah,02h
+    mov dh,2    ;row
+    mov dl,16    ;column
+    int 10h
+
+    mov si, FirstPlayerScore
+    call printf
+    ret
+
+    printf:
+    lodsb
+    cmp al, 0
+    je finish
+    mov ah, 0eh
+    int 10h
+    jmp printf
+
+    finish:
+    ret
+
+incFirstPlayerScore:
+    mov ax, word[FirstPlayerScore]
+    inc ax
+    mov word[FirstPlayerScore], ax
+    call printFirstPlayerScore
+ret 
+
+incSecondPlayerScore:
+    mov ax, word[SecondPlayerScore]
+    inc ax
+    mov word[SecondPlayerScore], ax
+    call printSecondPlayerScore
+ret    
+
+
 clearScreen:
     mov ah, 0       ; primeiro parametro para chamar modo de video
     mov al, 13h     ; segundo parametro para chamar modo de video
     int 10h
+
+    ; printa o placar
+    mov ah, 0xe ;escolhe cor da letra
+    mov bh, 0   ;numero da pagina
+    mov bl, 0xf ;cor branca da letra
 ret
 
 movBall:
@@ -126,6 +181,8 @@ p1Point:
     mov word[ballDirectionX],  0; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
     call clearScreen
+    call incFirstPlayerScore
+    call printSecondPlayerScore
 jmp mainLoop
 
 p2Point:
@@ -137,6 +194,8 @@ p2Point:
     mov word[ballDirectionX],  2; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
     call clearScreen
+    call printFirstPlayerScore
+    call incSecondPlayerScore
 jmp mainLoop
 
 checkCol:
