@@ -25,6 +25,10 @@ play db 'P','L','A','Y', 0
 instructions db 'I','N','S','T','R','U','C','O','E','S', 0
 credits db 'C','R','E','D','I','T','O','S', 0
 
+thiago db 'T','h','i','a','g','o',' ','J','o','s','e',' ','A','l','v','e','s',' ','d','e',' ','S','o','u','z','a',' ','<','T','J','A','S','>', 0
+carlos db 'C','a','r','l','o','s',' ','E','d','u','a','r','d','o',' ','B','e','z','e','r','r','a',' ','<','C','E','B','M','S','>',0
+clebson db 'J','o','s','e',' ','C','l','e','b','s','o','n',' ','d','e',' ','S','o','u','z','a',' ','O','l','i','v','e','i','r','a',' ','<','J','C','S','O','2','>',0
+
 menuState dw 0
 
 main:
@@ -84,6 +88,44 @@ main:
 jmp done
 
 ;----- GAME FUNCTIONS -----
+
+creditScreen:
+    call clearScreen
+    call setVideoMode
+
+    ; carlos
+    mov ah,02h
+    mov dh,9    ;row
+    mov dl,6   ;column
+    int 10h
+    mov si, carlos
+    mov bh, 0
+    mov bl, 0fh  ;makes it white
+    call printf
+    ; clebson
+    mov ah,02h
+    mov dh,11    ;row
+    mov dl,1   ;column
+    int 10h
+    mov si, clebson
+    mov bh, 0
+    mov bl, 0fh  ;makes it white
+    call printf
+    ; thiago
+    mov ah,02h
+    mov dh,13    ;row
+    mov dl,5   ;column
+    int 10h
+    mov si, thiago
+    mov bh, 0
+    mov bl, 0fh  ;makes it white
+    call printf
+    mov ah, 00h
+    int 16h
+    call clearScreen
+    call setVideoMode
+
+    jmp menuBegin
 
 doMenu:
     cmp word[menuState], 0
@@ -205,6 +247,10 @@ doMenu:
             int 16h
             cmp al, 'w'
             je decMenu
+            cmp al, 13  ;enter comeca o jogo
+            je creditScreen
+            cmp al, ' ' ;espaco comeca o jogo
+            je creditScreen
         jmp printCredits
 ret
 
@@ -767,7 +813,6 @@ swap_isr_15:
 
   ret  
 
-
  ;Tell if a scancode is pressed
  ;
  ;al = scancode  
@@ -829,10 +874,10 @@ _ni15_legacy:
  push WORD [cs: old_isr_15] 
  retf
 
-  ;Original ISR
+;Original ISR
 old_isr_15                      dw new_isr_15, 0  
 
- ;Scan code status table
+;Scan code status table
 scancode_status     TIMES 128   db 0
- ;Scan code count 
+;Scan code count 
 new_scancode                    dw 0
