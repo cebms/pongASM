@@ -21,6 +21,11 @@ ballDirectionY dw 0; 0 baixo, 1 parado, 2 cima
 ballSpeed dw 15
 ballCount dw 0
 
+play db 'P','L','A','Y', 0
+instructions db 'I','N','S','T','R','U','C','O','E','S', 0
+credits db 'C','R','E','D','I','T','O','S', 0
+
+menuState dw 0
 
 main:
     xor ax, ax
@@ -30,11 +35,137 @@ main:
 
     ;Setup ISR for the scancode
     call init
-    ;Clear screen
+   
     call clearScreen
     call setVideoMode
-    call printFirstPlayerScore
-    call printSecondPlayerScore
+    
+    ;------MENU---------
+
+    cmp word[menuState], 0
+    je printplay
+    cmp word[menuState], 1
+    je printInstructions
+    cmp word[menuState], 2
+    je printCredits
+
+    printplay:
+        ;play
+        mov ah,02h
+        mov dh,9    ;row
+        mov dl,18    ;column
+        int 10h
+        mov si, play
+        mov bh, 0
+        mov bl, 2  ;makes it green
+        call printf
+        ;intrucoes
+        mov ah,02h
+        mov dh,11   ;row
+        mov dl,15    ;column
+        int 10h
+        mov si, instructions
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ; creditos
+        mov ah,02h
+        mov dh,13    ;row
+        mov dl,16   ;column
+        int 10h
+        mov si, credits
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ; aqui espero o usuario digitar
+        inputPlay:
+            mov ah, 00
+            int 16h
+            cmp al, 's'
+            je incMenu
+            cmp al, ' '
+            je startLoop
+        jmp printplay
+    
+    printInstructions:
+        ;play
+        mov ah,02h
+        mov dh,9    ;row
+        mov dl,18    ;column
+        int 10h
+        mov si, play
+        mov bh, 0
+        mov bl, 0fh  ;makes it green
+        call printf
+        ;intrucoes
+        mov ah,02h
+        mov dh,11   ;row
+        mov dl,15    ;column
+        int 10h
+        mov si, instructions
+        mov bh, 0
+        mov bl, 02h  ;makes it white
+        call printf
+        ; creditos
+        mov ah,02h
+        mov dh,13    ;row
+        mov dl,16   ;column
+        int 10h
+        mov si, credits
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ; aqui espero o usuario digitar
+        inputInst:
+            mov ah, 00
+            int 16h
+            cmp al, 's'
+            je incMenu
+            cmp al, 'w'
+            je decMenu
+        jmp printInstructions
+
+    printCredits:
+       ;play
+        mov ah,02h
+        mov dh,9    ;row
+        mov dl,18    ;column
+        int 10h
+        mov si, play
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ;intrucoes
+        mov ah,02h
+        mov dh,11   ;row
+        mov dl,15    ;column
+        int 10h
+        mov si, instructions
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ; creditos
+        mov ah,02h
+        mov dh,13    ;row
+        mov dl,16   ;column
+        int 10h
+        mov si, credits
+        mov bh, 0
+        mov bl, 02h  ;makes it green
+        call printf
+        ; aqui espero o usuario digitar
+        inputCredit:
+            mov ah, 00
+            int 16h
+            cmp al, 'w'
+            je decMenu
+        jmp printCredits
+    
+
+    startLoop:
+        call clearScreen
+        call setVideoMode
+    
+    ; -----------------
 
     mainLoop:
 
@@ -67,11 +198,18 @@ main:
         jnz delaySecPlayerUp
 
         jmp mainLoop   
-       
 
 jmp done
 
 ;----- GAME FUNCTIONS -----
+
+incMenu:
+    inc word[menuState]
+jmp main
+
+decMenu:
+    dec word[menuState]
+jmp main
 
 printSecondPlayerScore:
     mov ah,02h
@@ -81,7 +219,7 @@ printSecondPlayerScore:
 
     mov si, SecondPlayerScore
     call printf
-    ret
+ret
 
 printFirstPlayerScore:
     mov ah,02h
@@ -91,9 +229,9 @@ printFirstPlayerScore:
 
     mov si, FirstPlayerScore
     call printf
-    ret
+ret
 
-    printf:
+printf:
     lodsb
     cmp al, 0
     je finish
@@ -101,7 +239,7 @@ printFirstPlayerScore:
     int 10h
     jmp printf
 
-    finish:
+finish:
     ret
 
 incFirstPlayerScore:
