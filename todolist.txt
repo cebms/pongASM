@@ -1,6 +1,5 @@
 **to do:
 
-- ScoreBoard
 - Menu (play, creditos, instrucoes)
 - Background color
 - Sound
@@ -10,6 +9,7 @@
 
 
 **done:
+- ScoreBoard
 - Fixing colisions 
 - Draw Ball 
 - Ball Physx 
