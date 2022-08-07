@@ -39,8 +39,50 @@ main:
     call clearScreen
     call setVideoMode
     
-    ;------MENU---------
+    menuBegin:
+        call doMenu
 
+    startLoop:
+        call clearScreen
+        call setVideoMode
+
+    mainLoop:
+
+        call drawRacket
+        
+        call drawRacketSec
+        
+        call drawBall
+        
+        call movBall
+        
+        mov al, 1fh           ;s
+        call is_scancode_pressed
+        ; jz mainLoops
+        jnz delayFirstPlayerDown
+
+        checkUp:
+        mov al, 11h           ;w 
+        call is_scancode_pressed
+        jnz delayFirstPlayerUp
+
+        checkDownSec:
+        mov al, 50h         ; arrow down
+        call is_scancode_pressed
+        jnz delaySecPlayerDown
+
+        checkUpSec:
+        mov al, 48h         ; arrow up
+        call is_scancode_pressed
+        jnz delaySecPlayerUp
+
+        jmp mainLoop   
+
+jmp done
+
+;----- GAME FUNCTIONS -----
+
+doMenu:
     cmp word[menuState], 0
     je printplay
     cmp word[menuState], 1
@@ -82,7 +124,9 @@ main:
             int 16h
             cmp al, 's'
             je incMenu
-            cmp al, ' '
+            cmp al, 13  ;enter comeca o jogo
+            je startLoop
+            cmp al, ' ' ;espaco comeca o jogo
             je startLoop
         jmp printplay
     
@@ -159,57 +203,15 @@ main:
             cmp al, 'w'
             je decMenu
         jmp printCredits
-    
-
-    startLoop:
-        call clearScreen
-        call setVideoMode
-    
-    ; -----------------
-
-    mainLoop:
-
-        call drawRacket
-        
-        call drawRacketSec
-        
-        call drawBall
-        
-        call movBall
-        
-        mov al, 1fh           ;s
-        call is_scancode_pressed
-        ; jz mainLoops
-        jnz delayFirstPlayerDown
-
-        checkUp:
-        mov al, 11h           ;w 
-        call is_scancode_pressed
-        jnz delayFirstPlayerUp
-
-        checkDownSec:
-        mov al, 50h         ; arrow down
-        call is_scancode_pressed
-        jnz delaySecPlayerDown
-
-        checkUpSec:
-        mov al, 48h         ; arrow up
-        call is_scancode_pressed
-        jnz delaySecPlayerUp
-
-        jmp mainLoop   
-
-jmp done
-
-;----- GAME FUNCTIONS -----
+ret
 
 incMenu:
     inc word[menuState]
-jmp main
+jmp menuBegin
 
 decMenu:
     dec word[menuState]
-jmp main
+jmp menuBegin
 
 printSecondPlayerScore:
     mov ah,02h
