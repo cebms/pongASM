@@ -28,6 +28,21 @@ credits db 'C','R','E','D','I','T','O','S', 0
 thiago db 'T','h','i','a','g','o',' ','J','o','s','e',' ','A','l','v','e','s',' ','d','e',' ','S','o','u','z','a',' ','<','T','J','A','S','>', 0
 carlos db 'C','a','r','l','o','s',' ','E','d','u','a','r','d','o',' ','B','e','z','e','r','r','a',' ','<','C','E','B','M','S','>',0
 clebson db 'J','o','s','e',' ','C','l','e','b','s','o','n',' ','d','e',' ','S','o','u','z','a',' ','O','l','i','v','e','i','r','a',' ','<','J','C','S','O','2','>',0
+blueWins db 'B','L','U','E',' ','w','i','n','s',0
+redWins db 'R','E','D',' ','w','i','n','s',0
+
+instructionLabel db 'M','o','v','e','r',' ' ,'r','a','q','u','e','t','e','s',' ',':', 0
+firstPlayerInstructions db 'P','1',':',' ',' ','W',' ',':',' ','S', 0
+secPlayerInstructions db 'P','2',':',' ',' ','S','E','T','A','S', 0
+extraInstructionLabel db 'O','b','j','e','t','i','v','o',' ',':', 0
+goalInstruction db '5',' ','P','O','N','T','O','S',0
+
+frictionInstruction db 'M','e','c','a','n','i','c','a',' ',':',0
+frictionUpInstruction db 'B','o','l','a',' ','s','o','b','e',' ','c','a','s','o',' ',' ',0
+upKeyInstruction db '-',' ','W',' ','|',' ','U','P',0
+frictionDownInstruction db 'B','o','l','a',' ','d','e','s','c','e',' ','c','a','s','o',' ',' ',0
+downKeyInstruction db '-',' ','S',' ','|',' ','D','O','W','N',0
+ballInstruction db 'B','o','l','a',' ','s','e','g','u','e',' ','r','e','t','a',' ','p','/',' ','o','u','t','r','a','s',' ','t','e','c','l','a','s',0
 
 menuState dw 0
 
@@ -44,6 +59,7 @@ main:
     call setVideoMode
     
     menuBegin:
+        call clearScreen
         call doMenu
 
     startLoop:
@@ -126,6 +142,119 @@ creditScreen:
     call setVideoMode
 
     jmp menuBegin
+
+    instructionScreen:
+    call clearScreen
+    call setVideoMode
+
+    ; carlos
+    mov ah,02h
+    mov dh,1    ;row
+    mov dl, 1   ;column
+    int 10h
+    mov si, instructionLabel
+    mov bh, 0
+    mov bl, 0fh  ;makes it white
+    call printf
+    ; clebson
+    mov ah,02h
+    mov dh,3   ;row
+    mov dl,2   ;column
+    int 10h
+    mov si, firstPlayerInstructions
+    mov bh, 0
+    mov bl, 4  ;makes it white
+    call printf
+    ; thiago
+    mov ah,02h
+    mov dh,5    ;row
+    mov dl,2   ;column
+    int 10h
+    mov si, secPlayerInstructions
+    mov bh, 0
+    mov bl, 1  ;makes it white
+    call printf
+
+    mov ah,02h
+    mov dh,8    ;row
+    mov dl,1   ;column
+    int 10h
+    mov si, extraInstructionLabel
+    mov bh, 0
+    mov bl, 15  ;makes it white
+    call printf
+
+
+    mov ah,02h
+    mov dh,10    ;row
+    mov dl,2   ;column
+    int 10h
+    mov si, goalInstruction
+    mov bh, 0
+    mov bl, 2  ;makes it white
+    call printf
+
+    mov ah,02h
+    mov dh,13    ;row
+    mov dl,1   ;column
+    int 10h
+    mov si, frictionInstruction
+    mov bh, 0
+    mov bl, 15  ;makes it white
+    call printf
+
+    mov ah,02h
+    mov dh,15    ;row
+    mov dl,1   ;column
+    int 10h
+    mov si, frictionUpInstruction
+    mov bh, 0
+    mov bl, 15  ;makes it white
+    call printf
+
+    mov ah,02h
+    mov dh,15    ;row
+    mov dl,18   ;column
+    int 10h
+    mov si, upKeyInstruction
+    mov bh, 0
+    mov bl, 4  ;makes it white
+    call printf
+
+    mov ah,02h
+    mov dh,16    ;row
+    mov dl,1   ;column
+    int 10h
+    mov si, frictionDownInstruction
+    mov bh, 0
+    mov bl, 15  ;makes it white
+    call printf
+
+    mov ah,02h
+    mov dh,16    ;row
+    mov dl,18   ;column
+    int 10h
+    mov si, downKeyInstruction
+    mov bh, 0
+    mov bl, 1  ;makes it white
+    call printf
+
+    mov ah,02h
+    mov dh,17    ;row
+    mov dl,1   ;column
+    int 10h
+    mov si, ballInstruction
+    mov bh, 0
+    mov bl, 7  ;makes it white
+    call printf
+
+    mov ah, 00h
+    int 16h
+    call clearScreen
+    call setVideoMode
+
+    jmp menuBegin
+
 
 doMenu:
     cmp word[menuState], 0
@@ -211,6 +340,10 @@ doMenu:
             je incMenu
             cmp al, 'w'
             je decMenu
+            cmp al, 13  ;enter comeca o jogo
+            je instructionScreen
+            cmp al, ' ' ;espaco comeca o jogo
+            je instructionScreen
         jmp printInstructions
 
     printCredits:
@@ -300,15 +433,63 @@ incFirstPlayerScore:
     inc ax
     mov word[FirstPlayerScore], ax
     call printFirstPlayerScore
-ret 
+ret
 
 incSecondPlayerScore:
     mov ax, word[SecondPlayerScore]
     inc ax
     mov word[SecondPlayerScore], ax
     call printSecondPlayerScore
-ret    
+ret
 
+firstPlayerWins:
+    mov ah,02h
+    mov dh, 12    ;row
+    mov dl, 15   ;column
+    int 10h
+
+    mov si, redWins
+    mov bl, 0x04
+    call printf
+
+    call checkForSpace
+
+ret
+
+secondPlayerWins:
+    mov ah,02h
+    mov dh, 12    ;row
+    mov dl, 15   ;column
+    int 10h
+
+    mov si, blueWins
+    mov bl, 0x01
+    call printf
+
+    call printFirstPlayerScore
+    call printSecondPlayerScore
+    call drawRacket
+    call drawRacketSec
+    
+
+    call checkForSpace
+
+ret
+
+checkForSpace:
+    mov al, 11h           ;w 
+    call is_scancode_pressed
+    ;reseta variaveis do jogo
+    mov word[FirstPlayerScore], 48
+    mov word[SecondPlayerScore], 48
+    mov word[ballPositionX], 153
+    mov word[ballPositionY], 60
+    mov word[ballDirectionX], 0
+    mov word[ballDirectionY], 1
+    mov word[ballCount], 0
+    mov word[menuState], 0
+    jnz menuBegin
+    jmp checkForSpace
 
 clearScreen:
     mov ah, 0       ; primeiro parametro para chamar modo de video
@@ -347,7 +528,7 @@ movBall:
         cmp word[ballPositionX], 0
         je p2Point
         ; se bater na parede da direita
-        cmp word[ballPositionX], 300
+        cmp word[ballPositionX], 312
         je p1Point
     
     movX:
@@ -364,6 +545,10 @@ movBall:
 ret
 
 p1Point:
+    call incFirstPlayerScore
+    call printSecondPlayerScore
+    cmp word[FirstPlayerScore], 56 ;compara se a pontuacao passou de 9
+    jg firstPlayerWins
     mov word[ballPositionX], 153
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
@@ -372,11 +557,13 @@ p1Point:
     mov word[ballDirectionX],  0; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
     call clearScreen
-    call incFirstPlayerScore
-    call printSecondPlayerScore
 jmp mainLoop
 
 p2Point:
+    call incSecondPlayerScore
+    call printFirstPlayerScore
+    cmp word[SecondPlayerScore], 56 ;compara se a pontuacao passou de 9
+    jg secondPlayerWins
     mov word[ballPositionX], 153
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
@@ -385,8 +572,7 @@ p2Point:
     mov word[ballDirectionX],  2; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
     call clearScreen
-    call printFirstPlayerScore
-    call incSecondPlayerScore
+    
 jmp mainLoop
 
 checkCol:
@@ -413,8 +599,11 @@ checkCol:
     jnz frictionDown
 
     mov word[ballDirectionY], 1; 0 baixo, 1 parado, 2 cima
-    endRacketCheck:
 
+    endRacketCheck:
+    cmp word[ballSpeed], 2
+    ja fasterBall
+    endBallSpeedCheck:
 jmp goRight
 
 checkColSec:
@@ -441,9 +630,20 @@ checkColSec:
     jnz frictionDownSec
 
     mov word[ballDirectionY], 1; 0 baixo, 1 parado, 2 cima
-    endRacketCheckSec:
 
+    endRacketCheckSec:
+        cmp word[ballSpeed], 2
+        ja fasterBallSec
+    endBallSpeedCheckSec:
 jmp goLeft
+
+fasterBall:
+    dec word[ballSpeed]
+jmp endBallSpeedCheck
+
+fasterBallSec:
+    dec word[ballSpeed]
+jmp endBallSpeedCheckSec
 
 frictionUp:
     mov word[ballDirectionY], 2 ;go up
@@ -626,7 +826,7 @@ drawRacket:
         add bx, word[playerPositionX]
         cmp cx, bx   ; direita da raquete
         je .fim2
-        mov al, 0x0f
+        mov al, 0x4
         mov ah, 0ch
         int 10h
         inc cx
@@ -659,7 +859,7 @@ drawRacketSec:
         add bx, word[secPlayerPositionX]
         cmp cx, bx   ; direita da raquete
         je .end2
-        mov al, 0x0f
+        mov al, 0x1
         mov ah, 0ch
         int 10h
         inc cx
