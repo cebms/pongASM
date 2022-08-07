@@ -12,11 +12,11 @@ racketSpeed dw 7
 FirstPlayerScore db 48, 0
 SecondPlayerScore db 48, 0
 
-ballPositionX dw 100
+ballPositionX dw 153
 ballPositionY dw 60
 
 ballDirectionX dw 0; 0 esquerda, 1 parado, 2 direita
-ballDirectionY dw 0; 0 baixo, 1 parado, 2 cima
+ballDirectionY dw 1; 0 baixo, 1 parado, 2 cima
 
 ballSpeed dw 15
 ballCount dw 0
@@ -55,6 +55,9 @@ main:
         call drawBall
         
         call movBall
+
+        call printFirstPlayerScore
+        call printSecondPlayerScore
         
         mov al, 1fh           ;s
         call is_scancode_pressed
@@ -220,6 +223,7 @@ printSecondPlayerScore:
     int 10h
 
     mov si, SecondPlayerScore
+    mov bl, 15 ; white color for scoreboard text
     call printf
 ret
 
@@ -230,6 +234,7 @@ printFirstPlayerScore:
     int 10h
 
     mov si, FirstPlayerScore
+    mov bl, 15 ; white color for scoreboard text
     call printf
 ret
 
@@ -313,7 +318,7 @@ movBall:
 ret
 
 p1Point:
-    mov word[ballPositionX], 96
+    mov word[ballPositionX], 153
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
     mov word[secPlayerPositionY], 75
@@ -326,7 +331,7 @@ p1Point:
 jmp mainLoop
 
 p2Point:
-    mov word[ballPositionX], 96
+    mov word[ballPositionX], 153
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
     mov word[secPlayerPositionY], 75
@@ -762,45 +767,6 @@ swap_isr_15:
 
   ret  
 
-  ;Wait for a change in the scancode table
-wait_for_scancode:
- cli                           ;Prevent the ISR from messing things up 
-
- ;At least one scancode processed?
- cmp WORD [new_scancode], 0 
- jne _wfs_found                ;Yes
-
- ;No, restore interrupt so the CPU can process the prending ones
- sti
-jmp wait_for_scancode
-
- ;New scancode, decrement the count and restore interrupts
-_wfs_found:
- dec WORD [new_scancode]
- sti 
-
- ret
-
-  ;THe BIOS is still saving keystrokes, we need to remove them or they 
-  ;will fill the buffer up (should not be a big deal in theory).
-remove_keystrokes:
- push ax
-
- ;Check if there are keystrokes to read.
- ;Release scancodes don't generate keystrokes 
-_rk_try:
- mov ah, 01h 
- int 16h
- jz _rk_end      ;No keystrokes present, done 
-
- ;Some keystroke present, read it (won't block)
- xor ah, ah 
- int 16h
-jmp _rk_try
-
-_rk_end:
- pop ax 
- ret
 
  ;Tell if a scancode is pressed
  ;
