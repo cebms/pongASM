@@ -1,16 +1,15 @@
 **to do:
 
-- ScoreBoard
 - Menu (play, creditos, instrucoes)
 - Background color
 - Sound
 - Racket colors
-- Ball friction with racket
 
 **doing: 
 
 
 **done:
+- ScoreBoard
 - Fixing colisions 
 - Draw Ball 
 - Ball Physx 
@@ -18,3 +17,4 @@
 - Rackets Drawing
 - Racket Movements
 - Field boundaries
+- Ball friction with racket

@@ -9,15 +9,23 @@ movCount dw 0
 movCountSec dw 0
 racketSpeed dw 7
 
-ballPositionX dw 100
+FirstPlayerScore db 48, 0
+SecondPlayerScore db 48, 0
+
+ballPositionX dw 153
 ballPositionY dw 60
 
 ballDirectionX dw 0; 0 esquerda, 1 parado, 2 direita
-ballDirectionY dw 0; 0 baixo, 1 parado, 2 cima
+ballDirectionY dw 1; 0 baixo, 1 parado, 2 cima
 
 ballSpeed dw 15
 ballCount dw 0
 
+play db 'P','L','A','Y', 0
+instructions db 'I','N','S','T','R','U','C','O','E','S', 0
+credits db 'C','R','E','D','I','T','O','S', 0
+
+menuState dw 0
 
 main:
     xor ax, ax
@@ -27,10 +35,16 @@ main:
 
     ;Setup ISR for the scancode
     call init
-    ;Clear screen
+   
     call clearScreen
-
     call setVideoMode
+    
+    menuBegin:
+        call doMenu
+
+    startLoop:
+        call clearScreen
+        call setVideoMode
 
     mainLoop:
 
@@ -41,6 +55,9 @@ main:
         call drawBall
         
         call movBall
+
+        call printFirstPlayerScore
+        call printSecondPlayerScore
         
         mov al, 1fh           ;s
         call is_scancode_pressed
@@ -63,16 +80,199 @@ main:
         jnz delaySecPlayerUp
 
         jmp mainLoop   
-       
 
 jmp done
 
 ;----- GAME FUNCTIONS -----
 
+doMenu:
+    cmp word[menuState], 0
+    je printplay
+    cmp word[menuState], 1
+    je printInstructions
+    cmp word[menuState], 2
+    je printCredits
+
+    printplay:
+        ;play
+        mov ah,02h
+        mov dh,9    ;row
+        mov dl,18    ;column
+        int 10h
+        mov si, play
+        mov bh, 0
+        mov bl, 2  ;makes it green
+        call printf
+        ;intrucoes
+        mov ah,02h
+        mov dh,11   ;row
+        mov dl,15    ;column
+        int 10h
+        mov si, instructions
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ; creditos
+        mov ah,02h
+        mov dh,13    ;row
+        mov dl,16   ;column
+        int 10h
+        mov si, credits
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ; aqui espero o usuario digitar
+        inputPlay:
+            mov ah, 00
+            int 16h
+            cmp al, 's'
+            je incMenu
+            cmp al, 13  ;enter comeca o jogo
+            je startLoop
+            cmp al, ' ' ;espaco comeca o jogo
+            je startLoop
+        jmp printplay
+    
+    printInstructions:
+        ;play
+        mov ah,02h
+        mov dh,9    ;row
+        mov dl,18    ;column
+        int 10h
+        mov si, play
+        mov bh, 0
+        mov bl, 0fh  ;makes it green
+        call printf
+        ;intrucoes
+        mov ah,02h
+        mov dh,11   ;row
+        mov dl,15    ;column
+        int 10h
+        mov si, instructions
+        mov bh, 0
+        mov bl, 02h  ;makes it white
+        call printf
+        ; creditos
+        mov ah,02h
+        mov dh,13    ;row
+        mov dl,16   ;column
+        int 10h
+        mov si, credits
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ; aqui espero o usuario digitar
+        inputInst:
+            mov ah, 00
+            int 16h
+            cmp al, 's'
+            je incMenu
+            cmp al, 'w'
+            je decMenu
+        jmp printInstructions
+
+    printCredits:
+       ;play
+        mov ah,02h
+        mov dh,9    ;row
+        mov dl,18    ;column
+        int 10h
+        mov si, play
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ;intrucoes
+        mov ah,02h
+        mov dh,11   ;row
+        mov dl,15    ;column
+        int 10h
+        mov si, instructions
+        mov bh, 0
+        mov bl, 0fh  ;makes it white
+        call printf
+        ; creditos
+        mov ah,02h
+        mov dh,13    ;row
+        mov dl,16   ;column
+        int 10h
+        mov si, credits
+        mov bh, 0
+        mov bl, 02h  ;makes it green
+        call printf
+        ; aqui espero o usuario digitar
+        inputCredit:
+            mov ah, 00
+            int 16h
+            cmp al, 'w'
+            je decMenu
+        jmp printCredits
+ret
+
+incMenu:
+    inc word[menuState]
+jmp menuBegin
+
+decMenu:
+    dec word[menuState]
+jmp menuBegin
+
+printSecondPlayerScore:
+    mov ah,02h
+    mov dh,2    ;row
+    mov dl,22    ;column
+    int 10h
+
+    mov si, SecondPlayerScore
+    mov bl, 15 ; white color for scoreboard text
+    call printf
+ret
+
+printFirstPlayerScore:
+    mov ah,02h
+    mov dh,2    ;row
+    mov dl,16    ;column
+    int 10h
+
+    mov si, FirstPlayerScore
+    mov bl, 15 ; white color for scoreboard text
+    call printf
+ret
+
+printf:
+    lodsb
+    cmp al, 0
+    je finish
+    mov ah, 0eh
+    int 10h
+    jmp printf
+
+finish:
+    ret
+
+incFirstPlayerScore:
+    mov ax, word[FirstPlayerScore]
+    inc ax
+    mov word[FirstPlayerScore], ax
+    call printFirstPlayerScore
+ret 
+
+incSecondPlayerScore:
+    mov ax, word[SecondPlayerScore]
+    inc ax
+    mov word[SecondPlayerScore], ax
+    call printSecondPlayerScore
+ret    
+
+
 clearScreen:
     mov ah, 0       ; primeiro parametro para chamar modo de video
     mov al, 13h     ; segundo parametro para chamar modo de video
     int 10h
+
+    ; printa o placar
+    mov ah, 0xe ;escolhe cor da letra
+    mov bh, 0   ;numero da pagina
+    mov bl, 0xf ;cor branca da letra
 ret
 
 movBall:
@@ -118,7 +318,7 @@ movBall:
 ret
 
 p1Point:
-    mov word[ballPositionX], 96
+    mov word[ballPositionX], 153
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
     mov word[secPlayerPositionY], 75
@@ -126,10 +326,12 @@ p1Point:
     mov word[ballDirectionX],  0; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
     call clearScreen
+    call incFirstPlayerScore
+    call printSecondPlayerScore
 jmp mainLoop
 
 p2Point:
-    mov word[ballPositionX], 96
+    mov word[ballPositionX], 153
     mov word[playerPositionY], 75
     mov word[playerPositionX], 10
     mov word[secPlayerPositionY], 75
@@ -137,6 +339,8 @@ p2Point:
     mov word[ballDirectionX],  2; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
     call clearScreen
+    call printFirstPlayerScore
+    call incSecondPlayerScore
 jmp mainLoop
 
 checkCol:
@@ -153,6 +357,17 @@ checkCol:
         add ax, 8
         cmp ax, bx
         jb movX
+
+    mov al, 11h           ;w 
+    call is_scancode_pressed
+    jnz frictionUp
+
+    mov al, 1fh           ;s 
+    call is_scancode_pressed
+    jnz frictionDown
+
+    mov word[ballDirectionY], 1; 0 baixo, 1 parado, 2 cima
+    endRacketCheck:
 
 jmp goRight
 
@@ -171,7 +386,34 @@ checkColSec:
         cmp ax, bx
         jb movX
 
+    mov al, 48h           ;arrow up
+    call is_scancode_pressed
+    jnz frictionUpSec
+
+    mov al, 50h           ;arrow down
+    call is_scancode_pressed
+    jnz frictionDownSec
+
+    mov word[ballDirectionY], 1; 0 baixo, 1 parado, 2 cima
+    endRacketCheckSec:
+
 jmp goLeft
+
+frictionUp:
+    mov word[ballDirectionY], 2 ;go up
+jmp endRacketCheck
+
+frictionDown:
+    mov word[ballDirectionY], 0 ;do down
+jmp endRacketCheck
+
+frictionUpSec:
+    mov word[ballDirectionY], 2 ;go up
+jmp endRacketCheckSec
+
+frictionDownSec:
+    mov word[ballDirectionY], 0 ;do down
+jmp endRacketCheckSec
 
 goRight:
     mov word[ballDirectionX], 2
@@ -525,45 +767,6 @@ swap_isr_15:
 
   ret  
 
-  ;Wait for a change in the scancode table
-wait_for_scancode:
- cli                           ;Prevent the ISR from messing things up 
-
- ;At least one scancode processed?
- cmp WORD [new_scancode], 0 
- jne _wfs_found                ;Yes
-
- ;No, restore interrupt so the CPU can process the prending ones
- sti
-jmp wait_for_scancode
-
- ;New scancode, decrement the count and restore interrupts
-_wfs_found:
- dec WORD [new_scancode]
- sti 
-
- ret
-
-  ;THe BIOS is still saving keystrokes, we need to remove them or they 
-  ;will fill the buffer up (should not be a big deal in theory).
-remove_keystrokes:
- push ax
-
- ;Check if there are keystrokes to read.
- ;Release scancodes don't generate keystrokes 
-_rk_try:
- mov ah, 01h 
- int 16h
- jz _rk_end      ;No keystrokes present, done 
-
- ;Some keystroke present, read it (won't block)
- xor ah, ah 
- int 16h
-jmp _rk_try
-
-_rk_end:
- pop ax 
- ret
 
  ;Tell if a scancode is pressed
  ;
