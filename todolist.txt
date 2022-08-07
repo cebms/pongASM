@@ -1,14 +1,14 @@
 **to do:
 
-- Menu (play, creditos, instrucoes)
 - Background color
 - Sound
-- Racket colors
 
 **doing: 
 
 
 **done:
+- Menu (play, creditos, instrucoes)
+- Racket colors
 - ScoreBoard
 - Fixing colisions 
 - Draw Ball 

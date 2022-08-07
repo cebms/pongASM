@@ -28,6 +28,7 @@ credits db 'C','R','E','D','I','T','O','S', 0
 thiago db 'T','h','i','a','g','o',' ','J','o','s','e',' ','A','l','v','e','s',' ','d','e',' ','S','o','u','z','a',' ','<','T','J','A','S','>', 0
 carlos db 'C','a','r','l','o','s',' ','E','d','u','a','r','d','o',' ','B','e','z','e','r','r','a',' ','<','C','E','B','M','S','>',0
 clebson db 'J','o','s','e',' ','C','l','e','b','s','o','n',' ','d','e',' ','S','o','u','z','a',' ','O','l','i','v','e','i','r','a',' ','<','J','C','S','O','2','>',0
+
 blueWins db 'B','L','U','E',' ','w','i','n','s',0
 redWins db 'R','E','D',' ','w','i','n','s',0
 
@@ -35,7 +36,7 @@ instructionLabel db 'M','o','v','e','r',' ' ,'r','a','q','u','e','t','e','s',' '
 firstPlayerInstructions db 'P','1',':',' ',' ','W',' ',':',' ','S', 0
 secPlayerInstructions db 'P','2',':',' ',' ','S','E','T','A','S', 0
 extraInstructionLabel db 'O','b','j','e','t','i','v','o',' ',':', 0
-goalInstruction db '5',' ','P','O','N','T','O','S',0
+goalInstruction db '9',' ','P','O','N','T','O','S',0
 
 frictionInstruction db 'M','e','c','a','n','i','c','a',' ',':',0
 frictionUpInstruction db 'B','o','l','a',' ','s','o','b','e',' ','c','a','s','o',' ',' ',0
@@ -556,6 +557,7 @@ p1Point:
     mov word[secPlayerPositionX], 303
     mov word[ballDirectionX],  0; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
+    mov word[ballSpeed], 15
     call clearScreen
 jmp mainLoop
 
@@ -601,7 +603,7 @@ checkCol:
     mov word[ballDirectionY], 1; 0 baixo, 1 parado, 2 cima
 
     endRacketCheck:
-    cmp word[ballSpeed], 2
+    cmp word[ballSpeed], 5
     ja fasterBall
     endBallSpeedCheck:
 jmp goRight
@@ -632,7 +634,7 @@ checkColSec:
     mov word[ballDirectionY], 1; 0 baixo, 1 parado, 2 cima
 
     endRacketCheckSec:
-        cmp word[ballSpeed], 2
+        cmp word[ballSpeed], 5
         ja fasterBallSec
     endBallSpeedCheckSec:
 jmp goLeft
