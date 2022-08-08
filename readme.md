@@ -6,11 +6,13 @@ Desenvolvimento de um bootloader em duas etapas e um kernel utilizando a linguag
 
 ## Setup
 
-instale o montador nasm
-instale o emulador qemu
-instale o make
-
-para inicializar bootloader basta rodar o make na raiz do projeto
+*instale o montador nasm
+``` sudo apt install nasm ```
+*instale o emulador qemu
+``` sudo apt install qemu-system-x86```
+*instale o make
+``` sudo apt install build-essential ```
+*para inicializar bootloader basta rodar o make na raiz do projeto
 
 ## Nossa Equipe
 
