@@ -5,8 +5,8 @@ jmp 0x0000:start
 ;utilizar o método de shift left (hexadecimal)
 ;e somar o offset no adress base, para rodarmos o kernel.
 
-runningKernel db 'Rodando Kernel...', 0
-
+runningKernel db 'Rodando Kernel...', 13, 0
+foomessage db 'PongGame',13, 0
 
 print_string:
 	lodsb
@@ -46,11 +46,15 @@ start:
 
 
     ;parte pra printar as mensagens que quisermos
-
-
     mov si, runningKernel
     call print_string
 
+    msg2:
+    mov si, foomessage
+    call print_string
+
+    mov dx, 12000
+    call delay
 
     reset:
         mov ah, 00h ;reseta o controlador de disco
@@ -79,8 +83,16 @@ start:
 
         jmp 0x7e00  ;pula para o setor de endereco 0x7e00, que é o kernel
 
-  
-
+    delay: 
+        mov bp, dx
+        back:
+        dec bp
+        nop
+        jnz back
+        dec dx
+        cmp dx,0    
+        jnz back
+    ret
 
     times 510-($-$$) db 0 ;512 bytes
     dw 0xaa55	

@@ -18,12 +18,15 @@ ballPositionY dw 60
 ballDirectionX dw 0; 0 esquerda, 1 parado, 2 direita
 ballDirectionY dw 1; 0 baixo, 1 parado, 2 cima
 
-ballSpeed dw 15
+ballSpeed dw 11
 ballCount dw 0
 
 play db 'P','L','A','Y', 0
 instructions db 'I','N','S','T','R','U','C','O','E','S', 0
 credits db 'C','R','E','D','I','T','O','S', 0
+gameName db 'B','I','T', 0
+gameNameSec db 'P','O','N','G', 0
+
 
 thiago db 'T','h','i','a','g','o',' ','J','o','s','e',' ','A','l','v','e','s',' ','d','e',' ','S','o','u','z','a',' ','<','T','J','A','S','>', 0
 carlos db 'C','a','r','l','o','s',' ','E','d','u','a','r','d','o',' ','B','e','z','e','r','r','a',' ','<','C','E','B','M','S','>',0
@@ -54,10 +57,8 @@ main:
     mov dx, ax
 
     ;Setup ISR for the scancode
+    callInit:
     call init
-   
-    call clearScreen
-    call setVideoMode
     
     menuBegin:
         call clearScreen
@@ -65,7 +66,6 @@ main:
 
     startLoop:
         call clearScreen
-        call setVideoMode
 
     mainLoop:
 
@@ -108,7 +108,6 @@ jmp done
 
 creditScreen:
     call clearScreen
-    call setVideoMode
 
     ; carlos
     mov ah,02h
@@ -140,13 +139,12 @@ creditScreen:
     mov ah, 00h
     int 16h
     call clearScreen
-    call setVideoMode
+
 
     jmp menuBegin
 
     instructionScreen:
     call clearScreen
-    call setVideoMode
 
     ; carlos
     mov ah,02h
@@ -252,18 +250,39 @@ creditScreen:
     mov ah, 00h
     int 16h
     call clearScreen
-    call setVideoMode
 
     jmp menuBegin
 
 
 doMenu:
+
+    ; gameName
+        mov ah,02h
+        mov dh, 4
+        mov dl, 17
+        int 10h
+        mov si, gameName
+        mov bh, 0
+        mov bl, 2
+        call printf
+
+        ; gameName
+        mov ah,02h
+        mov dh, 4
+        mov dl, 20
+        int 10h
+        mov si, gameNameSec
+        mov bh, 0
+        mov bl, 15
+        call printf
+
     cmp word[menuState], 0
     je printplay
     cmp word[menuState], 1
     je printInstructions
     cmp word[menuState], 2
     je printCredits
+
 
     printplay:
         ;play
@@ -557,7 +576,7 @@ p1Point:
     mov word[secPlayerPositionX], 303
     mov word[ballDirectionX],  0; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
-    mov word[ballSpeed], 15
+    mov word[ballSpeed], 11
     call clearScreen
 jmp mainLoop
 
@@ -573,6 +592,7 @@ p2Point:
     mov word[secPlayerPositionX], 303
     mov word[ballDirectionX],  2; 0 esquerda, 1 parado, 2 direita
     mov word[ballDirectionY], 0; 0 baixo, 1 parado, 2 cima
+    mov word[ballSpeed], 11
     call clearScreen
     
 jmp mainLoop
@@ -603,7 +623,7 @@ checkCol:
     mov word[ballDirectionY], 1; 0 baixo, 1 parado, 2 cima
 
     endRacketCheck:
-    cmp word[ballSpeed], 5
+    cmp word[ballSpeed], 3
     ja fasterBall
     endBallSpeedCheck:
 jmp goRight
@@ -634,7 +654,7 @@ checkColSec:
     mov word[ballDirectionY], 1; 0 baixo, 1 parado, 2 cima
 
     endRacketCheckSec:
-        cmp word[ballSpeed], 5
+        cmp word[ballSpeed], 3
         ja fasterBallSec
     endBallSpeedCheckSec:
 jmp goLeft
@@ -799,12 +819,6 @@ mov ax, word[racketSpeed]
 cmp word[movCountSec], ax
 je moveUpSec
 jmp mainLoop
-
-setVideoMode: 
-    mov ah, 0       ; primeiro parametro para chamar modo de video
-    mov al, 13h     ; segundo parametro para chamar modo de video
-    int 10h
-ret
 
 drawRacket:
     mov ah, 0ch ; coloca no modo de pintar pixels
